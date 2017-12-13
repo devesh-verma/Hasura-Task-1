@@ -1,15 +1,20 @@
 var express = require("express");
 var cookieParser = require("cookie-parser");
 var axios = require("axios");
-
+var bodyParser = require('body-parser');
 var app = express();
-app.use(cookieParser());
 
+app.use(cookieParser());
+app.use(bodyParser());
+
+app.set('view engine', 'ejs');
+var urlencodeParser = bodyParser.urlencoded({ extended: false });
 
 // "/" => "Hello World"
 app.get("/", function (req, res) {
     res.send("Hello World - Devesh");
 });
+// ========================================
 
 
 //setting cookies
@@ -28,15 +33,29 @@ app.get("/setcookies",function (req, res) {
         res.end();
     }
 });
+// ===========================================
+
 
 //Displaying cookies
 app.get('/getcookies', function(req, res) {
     console.log('Cookies: ', req.cookies);
     res.send(req.cookies);
 });
+// ============================================
+
+
+//deny requst
+app.get('/robots.txt', function (req, res) {
+    res.type('text/html');
+    res.redirect('http://httpbin.org/deny');
+});
+// ============================================
+
 
 // Render a static file like this
-app.use('/html', express.static(__dirname + '/static'));
+app.use('/html', express.static(__dirname + '/views'));
+// ============================================
+
 
 // Rendering authors and there posts
 const users = 'https://jsonplaceholder.typicode.com/users';
@@ -74,15 +93,19 @@ app.get('/authors', function(req, res){
         res.status(500).send('Error');
     });
 });
+// =============================================
 
 
-// "*" => requests sent to any route other than the ones defined by us will trigger this route.
-// NOTE : ROUTE ORDERING MATTERS, IF WE PUT "*" ROUTE AT 1ST NO OTHER ROUTES WILL BE ABLE  TO EXECUTE AS THEY WILL MATCH "*" ROUTE AT FIRST AND HENCE THAT WILL KEEP EXECUTING
-// ROUTES ARE MATCHED IN ORDER OF THEIR EXISTENCE
-app.get("*", function (req, res) {
-    res.send("Star route");
+//take input and show in console
+app.get('/input', (req, res) => {
+    res.render('input');
 });
 
+app.post('/input', urlencodeParser, (req, res) => {
+    console.log("entered value : " + req.body.value);
+    res.render('input');
+});
+// ==============================================
 
 //Tell Express to listen for requests (start server)
 
